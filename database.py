@@ -1,5 +1,4 @@
 import mariadb
-# import config
 
 
 class Database:
@@ -7,11 +6,13 @@ class Database:
     def __init__(self, init):
         """
         Connects to the database and initializes a cursor for it.
-        :param host: str, host address to connect with.
-        :param port: int, port number to connect with.
-        :param database_name: str, name of database to connect with
-        :param user: str, username to log in with to the database
-        :param password: str, name of database to connect with
+
+        :param init: dictionary, which contains:
+            host: str, host address to connect with;
+            port: int, port number to connect with;
+            database_name: str, name of database to connect with;
+            user: str, username to log in with to the database;
+            password: str, password to log in with to the database.
         """
         self.connection = mariadb.connect(host=init['host'],
                                           port=init['port'],
