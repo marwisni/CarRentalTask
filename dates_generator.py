@@ -1,7 +1,8 @@
-from datetime import date
+from datetime import date, datetime
 
 
 def start_date_for_car_rental(inventory):
+    """Returns purchase date of first bought car in the inventory."""
     start_date = inventory[0][3]
     for car in inventory:
         if car[3] < start_date:
@@ -9,7 +10,15 @@ def start_date_for_car_rental(inventory):
     return start_date
 
 
-def new_service_date(rental_date, return_date):
+def change_for_single_rent(rental_date, return_date):
+    """
+    Returns change of service's date for rents that have impact on some service date and None for those rents that does
+    have no impact on any service date.
+    :param rental_date: date, begin date for rent.
+    :param return_date: date, end date for rent.
+    :return: tuple[previous_service_date, new_service_date], for rents that ave impact on some service date and None
+    for others.
+    """
     year = rental_date.year
     months = [3, 9, 11]
     for month in months:
@@ -21,6 +30,7 @@ def new_service_date(rental_date, return_date):
 
 
 def all_possible_service_dates(inventory, last_date):
+    """Returns all possible services' dates for inventory until "LAST_DATE" date."""
     dates = []
     first_year = start_date_for_car_rental(inventory).year
     last_year = last_date.year
@@ -32,6 +42,7 @@ def all_possible_service_dates(inventory, last_date):
 
 
 def car_latest_possible_service_date(car, last_date):
+    """Returns the latest possible service date for particular car until "LAST_DATE" date."""
     if car[2] is not None and car[4].date() < last_date:
         return car[4].date()
     else:
@@ -39,6 +50,8 @@ def car_latest_possible_service_date(car, last_date):
 
 
 def all_cars_possible_service_dates(inventory, last_date):
+    """Returns list of lists of possible services' dates for all cars in inventory until 'LAST_DATE' date."""
+    last_date = datetime.strptime(last_date, "%Y-%m-%d").date()
     service_dates = []
     for car in inventory:
         service_dates.append([])
@@ -51,9 +64,10 @@ def all_cars_possible_service_dates(inventory, last_date):
 
 
 def changes_creator(rentals):
+    """Returns list of all necessary changes of services' dates that should be done for tuple of rents"""
     changes = []
     for rent in rentals:
-        change = new_service_date(rent[1], rent[2])
+        change = change_for_single_rent(rent[1], rent[2])
         if change is not None:
             change.insert(0, rent[0])
             changes.append(change)
@@ -61,6 +75,12 @@ def changes_creator(rentals):
 
 
 def changes_executor(dates, changes):
+    """
+    Applies changes for list of dates.
+    :param dates: list of lists of dates, list of lists of all potential dates for which changes can be applied.
+    :param changes: list of lists of two dates, list of changes that should be applied to the dates.
+    :return: list of lists of dates, list of updated (if necessary) services' dates.
+    """
     for change in changes:
         for d in range(len(dates[change[0] - 1])):
             if dates[change[0] - 1][d] == change[1]:

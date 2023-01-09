@@ -1,37 +1,23 @@
 import mariadb
-import config
+# import config
 
 
 class Database:
-    """
-    A class to manage project's database
-    Attributes
-    ----------
-    connection:
-        Object to manage connection to project's database
-    cursor:
-        Cursor of connection to the project's database
-    """
-    connection = None
-    cursor = None
-    user = config.user
-    password = config.password
-    host = config.host
-    port = config.port
-    name = config.database_name
-    last_date = config.last_date
-
-    def __init__(self):
+    """A class to manage project's database"""
+    def __init__(self, init):
         """
-        Constructs all necessary attributes for the database object.
-        :param name: str,
-            name of database to connect with
+        Connects to the database and initializes a cursor for it.
+        :param host: str, host address to connect with.
+        :param port: int, port number to connect with.
+        :param database_name: str, name of database to connect with
+        :param user: str, username to log in with to the database
+        :param password: str, name of database to connect with
         """
-        self.connection = mariadb.connect(user=self.user,
-                                          password=self.password,
-                                          host=self.host,
-                                          port=self.port,
-                                          database=self.name)
+        self.connection = mariadb.connect(host=init['host'],
+                                          port=init['port'],
+                                          database=init['database_name'],
+                                          user=init['user'],
+                                          password=init['password'])
         self.cursor = self.connection.cursor()
 
     def __del__(self):
@@ -39,14 +25,31 @@ class Database:
         self.connection.close()
 
     def get_query(self, sql):
+        """
+        Execute sql query to get data from the database and return this data.
+        :param sql: str, sql query to execute.
+        :return: tuple with data obtained from the database
+        """
         self.cursor.execute(sql)
         return self.cursor.fetchall()
 
     def modify_query(self, sql):
+        """
+        Executes sql query to modify data in the database.
+        :param sql: str, sql query to execute.
+        :return: None
+        """
         self.cursor.execute(sql)
         self.connection.commit()
 
     def put_many_query(self, sql, records_to_put, portion):
+        """
+        Inserts provided data in to the database in the chunks.
+        :param sql: str, sql query to execute.
+        :param records_to_put: tuple/list to be inserted into database.
+        :param portion: size of chunks for which data will be divided.
+        :return: None
+        """
         for i in range(0, len(records_to_put), portion):
             self.cursor.executemany(sql, records_to_put[i:i + portion])
             self.connection.commit()
